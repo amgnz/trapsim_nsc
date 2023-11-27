@@ -480,6 +480,15 @@ server<-function(input, output, session) {
     withProgress(message="Running simulation ",value=0,{
       #Go through the scenarios one by one...
       for(kk in 1:n.scen){  #For each scenario...
+        
+        
+        
+        # start.time<- Sys.time()
+        # print("start time of bait and trap checking")
+        # print(start.time)
+        
+        
+        
         incProgress(kk/n.scen, detail = paste("Doing scenario ", kk," of", n.scen))
         
         #Pass the parameters from params to a parameter name that will be used..
@@ -611,6 +620,15 @@ server<-function(input, output, session) {
 
         n.poss.vec<-floor(runif(n_its, min=n.poss.in.1, max=n.poss.in.2))
         for(ii in 1:n_its){
+          
+          
+          
+          start.time<- Sys.time()
+          print("start time of bait and trap checking")
+          print(start.time)
+          
+          
+          
           n.poss<-n.poss.vec[ii]
           pop.size.mat[ii,1]<-n.poss
           
@@ -663,11 +681,18 @@ server<-function(input, output, session) {
           animals.xy$Sigma<-rlnorm(n.animals ,meanlog=locshp$location, sdlog=locshp$shape)
           
             if(is.na(trap.start.a)==FALSE){
+              # start.time<- Sys.time()
+              # print("start time of bait and trap checking")
+              # print(start.time)
               dist2.xy.a<-matrix(NA,n.traps.a,n.animals)
               prob.xy.a<-matrix(0,n.traps.a,n.animals)
               dist.xy.a<-dist(as.data.frame(traps.xy.a), as.data.frame(animals.xy)[,1:2], method="euclidean") #Distance (not squared) - faster than using outer
               prob.xy.a<-exp(-(dist.xy.a^2)/(2*animals.xy$Sigma^2))*animals.xy$g0.a #Use the g0u for sampling...
               rm(dist.xy.a)
+              # end.time<- Sys.time()
+              # time.taken <- round(end.time - start.time, 2)
+              # print("end time")
+              # print(time.taken)
             }
             #Bait stations
             if(is.na(bait.start.a)==FALSE){
@@ -690,25 +715,48 @@ server<-function(input, output, session) {
             bait.catch.a<-matrix(0,n.baits.a,n.nights)  			#Trap.catch stores the captures in each trap each night
             # bait.remain.a<-rep(max.catch.b, n.traps.b)
           }
-
-          for (t in 1:n.nights){								#For each night
-            not.caught<-(1:n.animals)[animals.xy$Dead==0]			#Animals not already caught
+          
+          
+          for (t in 1:n.nights){   #For each night
             
+            
+            # start.time<- Sys.time()
+            # print("start time of bait and trap checking")
+            # print(start.time)
+            
+            
+            
+            
+            #probably create a variable in here and divide by number of nights at the end to get the average
+            not.caught<-(1:n.animals)[animals.xy$Dead==0]			#Animals not already caught
             if(is.na(trap.start.a)==FALSE){
               if(t%in%trap.period.a==TRUE){
+                
                 if(t%in%check.vec.a==TRUE){#If it is a trap clearance day...then reset the traps to T *before* trappig starts!
+                  
                   # trap.remain<-rep(T,n.traps)		
                   trap.remain.a<-rep(max.catch.a,n.traps.a)
                   # if (sim_type=='grid'){
                   #   grid.traps<-grid.traps.master
                   # }
+                  
                 }
+                
                 #Turn off some of the traps according to the random probability
                 # trap.remain[rbinom(n.traps,1, p.bycatch)==1]<-FALSE #Nedd to only turn off those that are on...Might be okay...
                 trap.remain.a<-trap.remain.a-rbinom(n.traps.a, trap.remain.a, p.bycatch.a) #This modifcation deals with multiple capture traps 
                 trap.remain.a[trap.remain.a<0]<-0
                 
+                
+                
+                # start.time<- Sys.time()
+                # print("start time of bait and trap checking")
+                # print(start.time)
+                
+                
+                
                 if(sum(not.caught)>0){
+                  
                   for (j in not.caught){ 							#For each animal not already caught
                       #New code based on Multinomial (from Dean...
                       prob.tmp<-prob.xy.a[,j]*(trap.remain.a>0)				#Adjust the probabilities with trap.remain so previous traps cannot catch anything
@@ -723,10 +771,18 @@ server<-function(input, output, session) {
                         # trap.remain[trap.id]<-(trap.catch[trap.id,t]<max.catch)			#Calculate whether the trap is full or not!!
                         trap.remain.a[trap.id]<-trap.remain.a[trap.id]-1
                       }
+                      
                   }
                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Module for immigration to go in here...
+                  
                 }
+                # end.time<- Sys.time()
+                # time.taken <- round(end.time - start.time, 2)
+                # print("end time")
+                # print(time.taken)
+                
               } #End of if t %in% trap.period
+              
             }
             
             #Now do some baiting....
@@ -750,6 +806,12 @@ server<-function(input, output, session) {
                 }
               } #End of if t %in% trap.period
             }
+            
+            
+            
+            # start.time<- Sys.time()
+            # print("start time of bait and trap checking")
+            # print(start.time)
             
             
             
@@ -841,12 +903,21 @@ server<-function(input, output, session) {
                 
                 n.animals<-dim(animals.xy)[1]
               }}
+            # end.time<- Sys.time()
+            # time.taken <- round(end.time - start.time, 2)
+            # print("end time")
+            # print(time.taken)
             
             #Update the age-class...
             pop.size.mat[ii,t+1]<-sum(animals.xy$Dead==0)
             #This calculates the number of alive animals in each zone.  
             # pop.size.zone.vec[[ii]][,t+1]<-table(over(animals.xy[animals.xy$Dead==0,], shp.2))
             
+            
+            # end.time<- Sys.time()
+            # time.taken <- round(end.time - start.time, 2)
+            # print("end time")
+            # print(time.taken)
           }	 #End of the night
             if(is.na(trap.start.a)==FALSE){
               trap.catch.mat[ii,]<-colSums(trap.catch.a)
@@ -858,6 +929,10 @@ server<-function(input, output, session) {
             }else{
               bait.catch.mat[ii,]<-rep(0, n.nights)
             }
+          end.time<- Sys.time()
+          time.taken <- round(end.time - start.time, 2)
+          print("end time")
+          print(time.taken)
         }#End of iteration ii
         
         params$TrapCost[kk]<-trap.cost.sim
@@ -869,7 +944,12 @@ server<-function(input, output, session) {
         pop.size.list[[kk]]<-pop.size.mat
         trap.catch.list[[kk]]<-trap.catch.mat
         bait.catch.list[[kk]]<-bait.catch.mat
+        
       } #End kk - end of scenario
+      # end.time<- Sys.time()
+      # time.taken <- round(end.time - start.time, 2)
+      # print("end time")
+      # print(time.taken)
     })  #End of progress
     #Re-order parameters for the table
     params<-params[,c(1,21,25,24,22:23,2:19)]
@@ -1589,7 +1669,6 @@ ui<-fluidPage(theme=shinytheme("flatly"),
               # img(src="ciss_logo.jpg", height = 90, align="right", hspace=20,vspace=10)
               # h6("Developed using funding from Centre for Invasive Species Solutions (CISS), MBIE (New Zealand), and Island Conservation")
 )
-
 
 shinyApp(ui=ui, server=server)
 
